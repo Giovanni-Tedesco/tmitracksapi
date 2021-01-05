@@ -46,6 +46,8 @@ func (a *App) Initialize(client *mongo.Client) {
 	authRoute := a.router.PathPrefix("/v1/auth").Subrouter()
 	authRoute.Use(auth.AuthMiddleWare)
 	authRoute.HandleFunc("/test", SubRouterRequests(auth.TestSomething, a.DB)).Methods("GET")
+	authRoute.HandleFunc("/signup", SubRouterRequests(auth.SignUp, a.DB)).Methods("POST")
+	authRoute.HandleFunc("/signin", SubRouterRequests(auth.SignIn, a.DB)).Methods("POST")
 }
 
 func (a *App) setRouters() {
