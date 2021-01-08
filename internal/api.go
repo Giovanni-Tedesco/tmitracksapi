@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Giovanni-Tedesco/tmitracksapi/internal/bins"
+	"github.com/Giovanni-Tedesco/tmitracksapi/internal/mechanic"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -22,7 +23,7 @@ type ErrorResponse struct {
 }
 
 func ConnectDB(client *mongo.Client) *mongo.Database {
-	database := client.Database("test2")
+	database := client.Database("TMI")
 
 	return database
 }
@@ -40,6 +41,8 @@ func (a *App) setRouters() {
 	a.Get("/get_bin", a.handleRequest(bins.TestDb))
 	a.Get("/get_users", a.handleRequest(bins.GetUsers))
 	a.Get("/get_all_users", a.handleRequest(bins.GetAllUsers))
+	a.Post("/create_report", a.handleRequest(mechanic.CreateReport))
+	a.Get("/get_report_by_date", a.handleRequest(mechanic.GetReportByDate))
 }
 
 // Wrappers for GET, POST, PUT, and DELETE
@@ -56,7 +59,7 @@ func (a *App) Put(path string, f func(w http.ResponseWriter, r *http.Request)) {
 }
 
 func (a *App) Delete(path string, f func(w http.ResponseWriter, r *http.Request)) {
-	a.router.HandleFunc(path, f).Methods(("DELETE"))
+	a.router.HandleFunc(path, f).Methods("DELETE")
 }
 
 func (a *App) Run(host string) {
