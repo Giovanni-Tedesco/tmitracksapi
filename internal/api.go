@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Giovanni-Tedesco/tmitracksapi/internal/bins"
 	"github.com/Giovanni-Tedesco/tmitracksapi/internal/mechanic"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -38,14 +37,12 @@ func (a *App) Initialize(client *mongo.Client) {
 
 func (a *App) setRouters() {
 	// a.Get("/get_hello", a.handleRequest(bins.Hello))
-	a.Get("/get_bin", a.handleRequest(bins.TestDb))
-	a.Get("/get_users", a.handleRequest(bins.GetUsers))
-	a.Get("/get_all_users", a.handleRequest(bins.GetAllUsers))
 	a.Post("/create_report", a.handleRequest(mechanic.CreateReport))
 	a.Get("/get_report_by_date", a.handleRequest(mechanic.GetReportByDate))
 	a.Get("/get_reports", a.handleRequest(mechanic.GetAllReports))
 	a.Get("/get_reports_range", a.handleRequest(mechanic.GetReportByDateRange))
 	a.Get("/get_report", a.handleRequest(mechanic.GetReportById))
+	a.Delete("/delete_report", a.handleRequest(mechanic.DeleteReport))
 }
 
 // Wrappers for GET, POST, PUT, and DELETE

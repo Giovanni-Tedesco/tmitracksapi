@@ -43,10 +43,49 @@ func CreateReport(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Inserted Id: %v", insertResults.InsertedID)
 }
 
+// Deletes reports by ID
 func DeleteReport(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 
+	type RequestBody struct {
+		ID string `json:"id" validate:"required"`
+	}
+
+	var req RequestBody
+	v := validator.New()
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Request Disallowed. Invalid Field")
+	}
+
+	err = v.Struct(req)
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		for _, e := range err.(validator.ValidationErrors) {
+			fmt.Fprintf(w, "%v", e)
+		}
+		return
+	}
+
+	collection := db.Collection("Reports")
+
+	res, err := collection.DeleteOne(context.Background(), bson.M{"_id": req.ID})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(res)
 }
 
+// Queries reports collection for document by ID
 func GetReportById(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 	type RequestBody struct {
 		ID primitive.ObjectID `json:"id" validate:"required"`
@@ -61,7 +100,7 @@ func GetReportById(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Request Disalloed. Invalid Field")
+		fmt.Fprintf(w, "Request Disallowed. Invalid Field")
 		return
 	}
 
@@ -90,6 +129,8 @@ func GetReportById(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(report)
 }
 
+// Queries reports in a range of dates, spanning from the lower bound(inclusive) and the
+// upper bound(inclusive).
 func GetReportByDateRange(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 	type RequestBody struct {
 		StartDate string `json:"start_date" validate:"required"`
