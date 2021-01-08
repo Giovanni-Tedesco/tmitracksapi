@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
+
 	"github.com/Giovanni-Tedesco/tmitracksapi/internal/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,12 +26,6 @@ func CreateReport(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 
 	var report entity.Report
 
-	// report.Duration = "00:20"
-	// report.Date = primitive.Timestamp{T: uint32(time.Now().Unix())}
-	// report.Equipment = "Cat 235"
-	// report.Notes = "No notes 3"
-	// report.Technician = "Andrei"
-	// report.ID = primitive.NewObjectID()
 	err := json.NewDecoder(r.Body).Decode(&report)
 
 	if err != nil {
@@ -52,16 +48,82 @@ func DeleteReport(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 }
 
 func GetReportById(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
+	type RequestBody struct {
+		ID primitive.ObjectID `json:"id" validate:"required"`
+	}
 
+	var req RequestBody
+	v := validator.New()
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Request Disalloed. Invalid Field")
+		return
+	}
+
+	err = v.Struct(req)
+
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			w.WriteHeader(http.StatusNotAcceptable)
+			fmt.Fprintf(w, "%v", e)
+		}
+		return
+	}
+
+	collection := db.Collection("Reports")
+
+	var report entity.Report
+
+	err = collection.FindOne(context.TODO(), bson.M{"_id": req.ID}).Decode(&report)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(report)
 }
 
 func GetReportByDateRange(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
+	type RequestBody struct {
+		StartDate string `json:"start_date" validate:"required"`
+		EndDate   string `json:"end_date" validate:"required"`
+	}
+
+	var req RequestBody
+	v := validator.New()
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Request Disalloed. Invalid Field")
+	}
+
+	err = v.Struct(req)
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotAcceptable)
+		for _, e := range err.(validator.ValidationErrors) {
+			fmt.Fprintf(w, "%v", e)
+		}
+		return
+	}
+
 	collection := db.Collection("Reports")
 
 	query := bson.D{
 		{"$and", []bson.M{
-			bson.M{"date": bson.M{"$lte": "2018-08-13"}},
-			bson.M{"date": bson.M{"$gte": "2018-08-12"}},
+			bson.M{"date": bson.M{"$lte": req.EndDate}},
+			bson.M{"date": bson.M{"$gte": req.StartDate}},
 		}},
 	}
 
@@ -107,7 +169,6 @@ func GetReportByDate(db *mongo.Database, w http.ResponseWriter, r *http.Request)
 
 	err := decoder.Decode(&req)
 	if err != nil {
-		fmt.Println("Error here")
 		log.Fatal(err)
 	}
 

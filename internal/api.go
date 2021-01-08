@@ -45,6 +45,7 @@ func (a *App) setRouters() {
 	a.Get("/get_report_by_date", a.handleRequest(mechanic.GetReportByDate))
 	a.Get("/get_reports", a.handleRequest(mechanic.GetAllReports))
 	a.Get("/get_reports_range", a.handleRequest(mechanic.GetReportByDateRange))
+	a.Get("/get_report", a.handleRequest(mechanic.GetReportById))
 }
 
 // Wrappers for GET, POST, PUT, and DELETE

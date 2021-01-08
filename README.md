@@ -10,7 +10,7 @@ You can run ```gin --appPort 8080 --port 3000``` to launch a hot reloaded dev en
 ***
 ### ```/create_report```
 - POST
-- Request format(json): 
+- Request format(json):
 ```
 {
   date: string,
