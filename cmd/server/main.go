@@ -84,11 +84,6 @@ func main() {
 
 	fmt.Println("Gorrila Mux Api 2.0")
 
-	Articles = []Article{
-		Article{Id: "1", Title: "Hello", Desc: "Article Description", Content: "Article Content"},
-		Article{Id: "2", Title: "Hello 2", Desc: "Article Description", Content: "Article Content"},
-	}
-
 	handleRequests()
 
 }

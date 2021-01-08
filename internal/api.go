@@ -43,6 +43,8 @@ func (a *App) setRouters() {
 	a.Get("/get_all_users", a.handleRequest(bins.GetAllUsers))
 	a.Post("/create_report", a.handleRequest(mechanic.CreateReport))
 	a.Get("/get_report_by_date", a.handleRequest(mechanic.GetReportByDate))
+	a.Get("/get_reports", a.handleRequest(mechanic.GetAllReports))
+	a.Get("/get_reports_range", a.handleRequest(mechanic.GetReportByDateRange))
 }
 
 // Wrappers for GET, POST, PUT, and DELETE
