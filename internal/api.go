@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Giovanni-Tedesco/tmitracksapi/internal/auth"
 	"github.com/Giovanni-Tedesco/tmitracksapi/internal/mechanic"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,12 +28,24 @@ func ConnectDB(client *mongo.Client) *mongo.Database {
 	return database
 }
 
+type RequestHandlerFunc func(db *mongo.Database, w http.ResponseWriter, r *http.Request)
+
+func SubRouterRequests(handler RequestHandlerFunc, db *mongo.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		handler(db, w, r)
+	}
+}
+
 func (a *App) Initialize(client *mongo.Client) {
 
 	a.DB = ConnectDB(client)
 
 	a.router = mux.NewRouter()
 	a.setRouters()
+
+	authRoute := a.router.PathPrefix("/v1/auth").Subrouter()
+	authRoute.Use(auth.AuthMiddleWare)
+	authRoute.HandleFunc("/test", SubRouterRequests(auth.TestSomething, a.DB)).Methods("GET")
 }
 
 func (a *App) setRouters() {
@@ -66,9 +79,7 @@ func (a *App) Run(host string) {
 	log.Fatal(http.ListenAndServe(host, a.router))
 }
 
-type RequestHandlerFunction func(db *mongo.Database, w http.ResponseWriter, r *http.Request)
-
-func (a *App) handleRequest(handler RequestHandlerFunction) http.HandlerFunc {
+func (a *App) handleRequest(handler RequestHandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		handler(a.DB, w, r)
 	}
