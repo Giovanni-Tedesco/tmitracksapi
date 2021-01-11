@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	. "github.com/Giovanni-Tedesco/tmitracksapi/internal/entity"
@@ -13,14 +15,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
 	// "github.com/go-playground/validator/v10"
 	// "go.mongodb.org/mongo-driver/bson"
 	// "go.mongodb.org/mongo-driver/bson/primitive"
 	// "go.mongodb.org/mongo-driver/mongo"
 	// "go.mongodb.org/mongo-driver/mongo/options"
 )
-
-var jwtKey = "falkjaf09324qal1203i90vlkj"
 
 func AuthMiddleWare(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
@@ -59,12 +60,20 @@ func SignUp(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 }
 
 func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	jwtKey := os.Getenv("JWT_KEY")
+
 	var creds User
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	err := decoder.Decode(&creds)
+	err = decoder.Decode(&creds)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -107,7 +116,7 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	tokenString, err := token.SignedString([]byte("test_key"))
+	tokenString, err := token.SignedString([]byte(jwtKey))
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
