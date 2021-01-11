@@ -19,9 +19,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/joho/godotenv"
 	// "github.com/go-playground/validator/v10"
-	// "go.mongodb.org/mongo-driver/bson"
 	// "go.mongodb.org/mongo-driver/bson/primitive"
-	// "go.mongodb.org/mongo-driver/mongo"
 	// "go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -33,6 +31,8 @@ func AuthMiddleWare(next http.Handler) http.Handler {
 }
 
 func SignUp(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
+	// TODO: Request input validation
+
 	var creds User
 
 	err := json.NewDecoder(r.Body).Decode(&creds)
@@ -61,6 +61,8 @@ func SignUp(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 }
 
 func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
+
+	// TODO: Request Input Validation
 
 	err := godotenv.Load()
 	if err != nil {
@@ -137,6 +139,8 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSomething(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
+
+	// NOTE: This endpoint should be removed as it is a security vulnerability.
 
 	claims, err := utilities.VerifyJWT(w, r)
 
