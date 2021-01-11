@@ -10,6 +10,8 @@ import (
 	"time"
 
 	. "github.com/Giovanni-Tedesco/tmitracksapi/internal/entity"
+	"github.com/Giovanni-Tedesco/tmitracksapi/utilities"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -27,7 +29,6 @@ func AuthMiddleWare(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		next.ServeHTTP(w, r)
 	}
-
 	return http.HandlerFunc(fn)
 }
 
@@ -108,7 +109,7 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 	expirationtime := time.Now().Add(time.Minute * 5)
 
 	claims := &Claims{
-		email: creds.Email,
+		Email: creds.Email,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationtime.Unix(),
 		},
@@ -136,5 +137,14 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSomething(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This works 🚀")
+
+	claims, err := utilities.VerifyJWT(w, r)
+
+	if err != nil {
+		fmt.Fprintf(w, "%v", err)
+	}
+
+	// json.NewEncoder(w).Encode(claims)
+	fmt.Fprintf(w, "%v", claims.Email)
+
 }
