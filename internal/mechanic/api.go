@@ -40,7 +40,10 @@ func CreateReport(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	fmt.Fprintf(w, "Inserted Id: %v", insertResults.InsertedID)
+	// fmt.Fprintf(w, "Inserted Id: %v", insertResults.InsertedID)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(insertResults)
 }
 
 // Deletes reports by ID
