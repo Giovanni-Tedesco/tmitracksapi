@@ -19,9 +19,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/joho/godotenv"
-	// "github.com/go-playground/validator/v10"
-	// "go.mongodb.org/mongo-driver/bson/primitive"
-	// "go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func AuthMiddleWare(next http.Handler) http.Handler {
@@ -93,6 +90,13 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
+	// v := validator.New()
+	// err = v.Struct(creds)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	collection := db.Collection("Users")
 
 	var storedCreds User
@@ -151,8 +155,6 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSomething(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
-
-	// NOTE: This endpoint should be removed as it is a security vulnerability.
 
 	claims, err := utilities.VerifyJWT(w, r)
 

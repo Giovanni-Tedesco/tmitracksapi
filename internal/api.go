@@ -53,6 +53,7 @@ func (a *App) Initialize(client *mongo.Client) {
 	authRoute.HandleFunc("/signin", SubRouterRequests(auth.SignIn, a.DB)).Methods("POST")
 
 	reportsRoute := a.router.PathPrefix("/v1/reports").Subrouter()
+	// reportsRoute.Use(auth.AuthMiddleware)
 	reportsRoute.HandleFunc("/create_report", SubRouterRequests(mechanic.CreateReport, a.DB)).Methods("POST")
 	reportsRoute.HandleFunc("/get_reports_by_date", SubRouterRequests(mechanic.GetReportByDate, a.DB)).Methods("GET")
 	reportsRoute.HandleFunc("/get_reports", SubRouterRequests(mechanic.GetAllReports, a.DB)).Methods("GET")
