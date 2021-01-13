@@ -51,6 +51,14 @@ func (a *App) Initialize(client *mongo.Client) {
 	authRoute.HandleFunc("/test", SubRouterRequests(auth.TestSomething, a.DB)).Methods("GET")
 	authRoute.HandleFunc("/signup", SubRouterRequests(auth.SignUp, a.DB)).Methods("POST")
 	authRoute.HandleFunc("/signin", SubRouterRequests(auth.SignIn, a.DB)).Methods("POST")
+
+	reportsRoute := a.router.PathPrefix("/v1/reports").Subrouter()
+	reportsRoute.HandleFunc("/create_report", SubRouterRequests(mechanic.CreateReport, a.DB)).Methods("POST")
+	reportsRoute.HandleFunc("/get_reports_by_date", SubRouterRequests(mechanic.GetReportByDate, a.DB)).Methods("GET")
+	reportsRoute.HandleFunc("/get_reports", SubRouterRequests(mechanic.GetAllReports, a.DB)).Methods("GET")
+	reportsRoute.HandleFunc("/get_reports_range", SubRouterRequests(mechanic.GetReportByDateRange, a.DB)).Methods("GET")
+	reportsRoute.HandleFunc("/get_report", SubRouterRequests(mechanic.GetReportById, a.DB)).Methods("GET")
+	reportsRoute.HandleFunc("/delete_report", SubRouterRequests(mechanic.DeleteReport, a.DB)).Methods("DELETE")
 }
 
 func (a *App) setRouters() {

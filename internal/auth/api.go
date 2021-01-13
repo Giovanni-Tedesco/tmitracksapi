@@ -24,7 +24,6 @@ import (
 	// "go.mongodb.org/mongo-driver/mongo/options"
 )
 
-
 func AuthMiddleWare(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		next.ServeHTTP(w, r)
@@ -123,7 +122,8 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 	expirationtime := time.Now().Add(time.Minute * 5)
 
 	claims := &Claims{
-		Email: creds.Email,
+		Email: storedCreds.Email,
+		Role:  storedCreds.Role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationtime.Unix(),
 		},
@@ -158,9 +158,10 @@ func TestSomething(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		fmt.Fprintf(w, "%v", err)
+		return
 	}
 
 	// json.NewEncoder(w).Encode(claims)
-	fmt.Fprintf(w, "%v", claims.Email)
+	fmt.Fprintf(w, "The user role is: %v", claims.Role)
 
 }
