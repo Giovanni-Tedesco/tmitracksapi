@@ -11,6 +11,7 @@ import (
 
 	. "github.com/Giovanni-Tedesco/tmitracksapi/internal/entity"
 	"github.com/Giovanni-Tedesco/tmitracksapi/utilities"
+	"github.com/go-playground/validator/v10"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -35,18 +36,28 @@ func SignUp(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 
 	var creds User
 
-	err := json.NewDecoder(r.Body).Decode(&creds)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(&creds)
+
+	v := validator.New()
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
+	err = v.Struct(creds)
+	if err != nil {
+		fmt.Fprintf(w, "%v", err)
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Password), 8)
 
 	Users := db.Collection("Users")
 
-	insertDoc := User{Email: creds.Email, Password: string(hashedPassword)}
+	insertDoc := User{Email: creds.Email, Password: string(hashedPassword),
+		Role: creds.Role}
 
 	results, err := Users.InsertOne(context.TODO(), insertDoc)
 
