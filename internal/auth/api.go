@@ -10,7 +10,7 @@ import (
 	"time"
 
 	. "github.com/Giovanni-Tedesco/tmitracksapi/internal/entity"
-	"github.com/Giovanni-Tedesco/tmitracksapi/utilities"
+	"github.com/Giovanni-Tedesco/tmitracksapi/pkg/utilities"
 	"github.com/go-playground/validator/v10"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -68,6 +68,11 @@ func SignUp(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(results)
 }
 
+type SignInBody struct {
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
 func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Request Input Validation
@@ -79,7 +84,7 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 
 	jwtKey := os.Getenv("JWT_KEY")
 
-	var creds User
+	var creds SignInBody
 
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
@@ -90,8 +95,8 @@ func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	// v := validator.New()
-	// err = v.Struct(creds)
+	v := validator.New()
+	err = v.Struct(creds)
 
 	if err != nil {
 		log.Fatal(err)
