@@ -75,8 +75,6 @@ type SignInBody struct {
 
 func SignIn(db *mongo.Database, w http.ResponseWriter, r *http.Request) {
 
-	// TODO: Request Input Validation
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)

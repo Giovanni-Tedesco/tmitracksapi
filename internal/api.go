@@ -60,6 +60,9 @@ func (a *App) Initialize(client *mongo.Client) {
 	reportsRoute.HandleFunc("/get_reports_range", SubRouterRequests(mechanic.GetReportByDateRange, a.DB)).Methods("GET")
 	reportsRoute.HandleFunc("/get_report", SubRouterRequests(mechanic.GetReportById, a.DB)).Methods("GET")
 	reportsRoute.HandleFunc("/delete_report", SubRouterRequests(mechanic.DeleteReport, a.DB)).Methods("DELETE")
+
+	fuelLog := a.router.PathPrefix("/v1/fuellog").Subrouter()
+	fuelLog.Use(auth.AdminAuthMiddleware)
 }
 
 func (a *App) setRouters() {
